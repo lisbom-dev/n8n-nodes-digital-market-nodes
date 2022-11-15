@@ -1,0 +1,56 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "npm run build && npm link && cd \"$(where n8n | sed -e 's|/bin/n8n||')/lib/node_modules/n8n\" && npm link n8n-nodes-digital-market-nodes",
+			"problemMatcher": [],
+			"label": "Build N8N nodes",
+			"group": "build",
+			"presentation": {
+				"group": "n8n",
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": false,
+				"clear": true,
+				"close": true
+			}
+		},
+		{
+			"type": "shell",
+			"command": "n8n start",
+			"dependsOn": "Build N8N nodes",
+			"dependsOrder": "sequence",
+			"problemMatcher": [],
+			"label": "Run N8N",
+			"presentation": {
+				"group": "n8n",
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": false,
+				"clear": true,
+				"close": true
+			}
+		},
+		{
+			"type": "shell",
+			"command": "ngrok http 5678",
+			"problemMatcher": [],
+			"label": "Run Ngrok",
+			"presentation": {
+				"group": "n8n",
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": false,
+				"clear": true,
+				"close": true
+			}
+		}
+	]
+}
