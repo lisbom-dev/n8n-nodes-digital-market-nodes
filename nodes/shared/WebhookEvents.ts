@@ -7,6 +7,8 @@ export enum WebhookEventTypes {
 	CHARGEBACK,
 	PURCHASE_APPROVED,
 	PURCHASE_REFUSED,
+	PURCHASE_CANCELED,
+	PURCHASE_COMPLETED,
 	GENERATED_PIX,
 	REFUND,
 }
@@ -36,6 +38,10 @@ export const webhookEvents = {
 		name: 'Chargeback',
 		value: 'postback.chargeback',
 	},
+	[WebhookEventTypes.PURCHASE_COMPLETED]: {
+		name: 'Compra Concluída',
+		value: 'postback.compra.concluida',
+	},
 	[WebhookEventTypes.PURCHASE_APPROVED]: {
 		name: 'Compra Aprovada',
 		value: 'postback.compra.aprovada',
@@ -51,6 +57,10 @@ export const webhookEvents = {
 	[WebhookEventTypes.REFUND]: {
 		name: 'Reembolso',
 		value: 'postback.reembolso',
+	},
+	[WebhookEventTypes.PURCHASE_CANCELED]: {
+		name: 'Compra Cancelada',
+		value: 'postback.compra.cancelada',
 	},
 	all: {
 		name: 'Todos',

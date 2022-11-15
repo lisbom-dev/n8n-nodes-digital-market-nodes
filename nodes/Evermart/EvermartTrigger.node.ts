@@ -12,15 +12,14 @@ function getEvent(this: IWebhookFunctions): WebhookEventTypes {
 	if (body.status === 'billet_printed') {
 		return WebhookEventTypes.GENERATED_BILLET;
 	}
-	if (body.status === 'waiting_payment' && body.payment_type === 'pix') {
+	if (body.status === 'wayting_payment' && body.payment_type === 'pix') {
 		return WebhookEventTypes.GENERATED_PIX;
 	}
 	if (body.status === 'approved' || body.status === 'completed') {
 		return WebhookEventTypes.PURCHASE_APPROVED;
 	}
 	if (
-		body.status === 'approved' &&
-		(body.Subscription as IDataObject)?.subscription_status === 'inactive'
+		body.status === 'delayed'
 	) {
 		return WebhookEventTypes.SUBSCRIPTION_LATE;
 	}
@@ -30,10 +29,16 @@ function getEvent(this: IWebhookFunctions): WebhookEventTypes {
 	) {
 		return WebhookEventTypes.SUBSCRIPTION_RENEWED;
 	}
+	if(body.status === 'complete'){
+		return WebhookEventTypes.PURCHASE_COMPLETED;
+	}
+	if(body.cancellationDate){
+		return WebhookEventTypes.SUBSCRIPTION_CANCELED;
+	}
 	if (body.status === 'refused') {
 		return WebhookEventTypes.PURCHASE_REFUSED;
 	}
-	if (body.status === 'refunded' || body.status === 'reversed') {
+	if (body.status === 'refunded') {
 		return WebhookEventTypes.REFUND;
 	}
 	if (body.status === 'chargedback') {
