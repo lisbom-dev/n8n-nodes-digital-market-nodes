@@ -9,6 +9,7 @@ export enum WebhookEventTypes {
 	PURCHASE_REFUSED,
 	PURCHASE_CANCELED,
 	PURCHASE_COMPLETED,
+	PURCHASE_PROTEST,
 	GENERATED_PIX,
 	REFUND,
 }
@@ -49,6 +50,10 @@ export const webhookEvents = {
 	[WebhookEventTypes.PURCHASE_REFUSED]: {
 		name: 'Compra Recusada',
 		value: 'postback.compra.recusada',
+	},
+	[WebhookEventTypes.PURCHASE_PROTEST]: {
+		name: 'Compra Protestada',
+		value: 'postback.compra.protestada',
 	},
 	[WebhookEventTypes.GENERATED_PIX]: {
 		name: 'Pix Gerado',

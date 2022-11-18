@@ -33,13 +33,15 @@
 			"dist/credentials/KiwifyApi.credentials.js",
 			"dist/credentials/EvermartApi.credentials.js",
 			"dist/credentials/PlugChatApi.credentials.js",
-			"dist/credentials/MonetizzeApi.credentials.js"
+			"dist/credentials/MonetizzeApi.credentials.js",
+      "dist/credentials/HotmartApi.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/Kiwify/KiwifyTrigger.node.js",
 			"dist/nodes/Evermart/EvermartTrigger.node.js",
 			"dist/nodes/PlugChat/PlugChat.node.js",
-			"dist/nodes/Monetizze/MonetizzeTrigger.node.js"
+			"dist/nodes/Monetizze/MonetizzeTrigger.node.js",
+      "dist/nodes/Hotmart/HotmartTrigger.node.js"
 		]
 	},
 	"devDependencies": {
