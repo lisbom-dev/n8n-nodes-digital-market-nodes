@@ -110,8 +110,9 @@ export class KiwifyTrigger implements INodeType {
 
 		const event = getEvent.call(this);
 		if (
-			webhookEvents[event].value === this.getNodeParameter('event') ||
-			this.getNodeParameter('event') === 'todos'
+			event &&
+			(webhookEvents[event].value === this.getNodeParameter('event') ||
+			this.getNodeParameter('event') === 'todos')
 		) {
 			return {
 				workflowData: [this.helpers.returnJsonArray({ originalData: req.body, event })],

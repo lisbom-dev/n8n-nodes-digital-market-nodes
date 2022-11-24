@@ -1,4 +1,4 @@
-import type {
+import {
 	IDataObject,
 	INodeType,
 	INodeTypeDescription,
@@ -7,58 +7,76 @@ import type {
 } from 'n8n-workflow';
 import { webhookEvents, WebhookEventTypes } from '../shared/WebhookEvents';
 
-function getEvent(this: IWebhookFunctions): WebhookEventTypes {
+function getEvent(this: IWebhookFunctions): WebhookEventTypes | undefined {
 	const body = this.getBodyData() as IDataObject & Record<string, IDataObject>;
 
-	if (
-		(body.tipoPostback.codigo === '99' && body.venda.status === 'Aguardando pagamento') ||
-		(body.tipoPostback.codigo === '1' && body.venda.formaPagamento === 'Boleto') ||
-		(body.venda.codigo_status === '1' && body.venda.formaPagamento === 'Boleto')
-	) {
+	if (body.event === 'PURCHASE_CANCELED'){
+		return WebhookEventTypes.PURCHASE_CANCELED;
+	}
+
+	if (body.event === 'PURCHASE_COMPLETE'){
+		return WebhookEventTypes.PURCHASE_COMPLETED;
+	}
+
+	if (body.event === 'PURCHASE_PENDING'){
 		return WebhookEventTypes.GENERATED_BILLET;
 	}
 
-	if (
-		body.tipoPostback.codigo === '1' &&
-		(!!body.pix_url || !!body.pix_imagem_qrcode || !!body.pix_codigo_qrcode)
-	) {
-		return WebhookEventTypes.GENERATED_PIX;
+	if (body.event === 'PURCHASE_CHARGEBACK'){
+		return WebhookEventTypes.CHARGEBACK;
 	}
 
-	if (body.tipoPostback.codigo === '2') {
-		return WebhookEventTypes.PURCHASE_APPROVED;
-	}
-
-	if (body.tipoPostback.codigo === '102') {
-		return WebhookEventTypes.SUBSCRIPTION_LATE;
-	}
-
-	if (body.tipoPostback.codigo === '101') {
-		return WebhookEventTypes.SUBSCRIPTION_RENEWED;
-	}
-
-	if (body.tipoPostback.codigo === '3') {
-		return WebhookEventTypes.PURCHASE_REFUSED;
-	}
-
-	if (body.tipoPostback.codigo === '4') {
+	if (body.event === 'PURCHASE_REFUNDED'){
 		return WebhookEventTypes.REFUND;
 	}
 
-	return WebhookEventTypes.ABANDONED_CART;
+	if (body.event === 'PURCHASE_APPROVED'){
+		return WebhookEventTypes.PURCHASE_APPROVED;
+	}
+
+	if (body.event === 'PURCHASE_EXPIRED'){
+		return WebhookEventTypes.PURCHASE_CANCELED;
+	}
+
+	if (body.event === 'PURCHASE_APPROVED'){
+		return WebhookEventTypes.PURCHASE_APPROVED;
+	}
+
+	if (body.event === 'PURCHASE_DELAYED'){
+		return WebhookEventTypes.SUBSCRIPTION_LATE;
+	}
+
+	if (body.event === 'PURCHASE_PROTEST'){
+		return WebhookEventTypes.PURCHASE_PROTEST;
+	}
+
+	if (body.event === 'SUBSCRIPTION_CANCELLATION'){
+		return WebhookEventTypes.SUBSCRIPTION_CANCELED;
+	}
+
+	if (body.event === 'SWITCH_PLAN'){
+		return WebhookEventTypes.SUBSCRIPTION_RENEWED;
+	}
+
+	if (body.event === 'PURCHASE_OUT_OF_SHOPPING_CART'){
+		return WebhookEventTypes.ABANDONED_CART;
+	}
+
+	return;
 }
 
-export class MonetizzeTrigger implements INodeType {
+export class HotmartTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Monetizze Trigger',
-		name: 'MonetizzeTrigger',
-		icon: 'file:monetizze.svg',
+		displayName: 'Hotmart Trigger',
+		name: 'HotmartTrigger',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:hotmart.png',
 		subtitle: '={{$parameter["event"]}}',
 		group: ['trigger', 'digital-mkt', 'platforms'],
 		version: 1,
-		description: 'Monetizze Webhook Trigger',
+		description: 'Hotmart Webhook Trigger',
 		triggerPanel: {
-			header: '',
+			header:'',
 			executionsHelp: {
 				inactive:
 					'Webhooks have two modes: test and production. <br /> <br /> <b>Use test mode while you build your workflow</b>. Click the \'listen\' button, then make a request to the test URL. The executions will show up in the editor.<br /> <br /> <b>Use production mode to run your workflow automatically</b>. <a data-key="activate">Activate</a> the workflow, then make requests to the production URL. These executions will show up in the executions list, but not in the editor.',
@@ -69,11 +87,11 @@ export class MonetizzeTrigger implements INodeType {
 				'Once you’ve finished building your workflow, run it without having to click this button by using the production webhook URL.',
 		},
 		defaults: {
-			name: 'Monetizze Trigger',
+			name: 'Hotmart Trigger',
 		},
 		credentials: [
 			{
-				name: 'monetizzeApi',
+				name: 'hotmartApi',
 				required: true,
 			},
 		],
@@ -83,7 +101,7 @@ export class MonetizzeTrigger implements INodeType {
 				isFullPath: true,
 				httpMethod: 'POST',
 				responseMode: 'onReceived',
-				path: 'mkt/monetizze',
+				path: 'mkt/hotmart',
 			},
 		],
 		inputs: [],
@@ -99,13 +117,14 @@ export class MonetizzeTrigger implements INodeType {
 			},
 		],
 	};
+
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const req = this.getRequestObject();
-		const credentials = await this.getCredentials('monetizzeApi');
+		const credentials = await this.getCredentials('hotmartApi');
 		const res = this.getResponseObject();
 
-		if (req.body.chave_unica !== credentials.token) {
-			res.end('Invalid signature');
+		if (req.headers['x-hotmart-hottok'] !== credentials.hottok) {
+			res.status(401).send('Invalid signature');
 			return {
 				noWebhookResponse: true,
 			};
@@ -119,10 +138,10 @@ export class MonetizzeTrigger implements INodeType {
 			this.getNodeParameter('event') === 'todos')
 		) {
 			return {
-				workflowData: [this.helpers.returnJsonArray({ originalData: req.body, event })],
+				workflowData: [this.helpers.returnJsonArray({ originalData: req.body, event})],
 			};
 		}
-		res.end('Invalid event');
+
 		return {
 			noWebhookResponse: true,
 		};
